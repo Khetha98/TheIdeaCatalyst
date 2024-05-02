@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/TheIdeaCatalyst?useSSL=false
+    username: root
+    password: 100%Khetha
+
+
+#JPA Settings
+jpa.hibernate.ddl_auto: create
+
