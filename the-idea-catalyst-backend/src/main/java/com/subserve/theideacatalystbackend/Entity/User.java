@@ -1,6 +1,5 @@
 package com.subserve.theideacatalystbackend.Entity;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,33 +16,32 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
-
-    @Column(name = "user_id")
-    private String userId;
 
     @Column(name = "username")
     private String name;
 
     @Column(name = "surname")
-    private String Surname;
+    private String surname;
 
     @Column(name = "password")
-    private String Password;
+    private String password;
 
     @Column(name = "street")
-    private String Street;
+    private String street;
 
     @Column(name = "city")
-    private String City;
+    private String city;
 
     @Column(name = "state_or_province")
-    private String State;
+    private String state;
 
     @Column(name = "country")
-    private String Country;
+    private String country;
 
     @Column(name = "zipcode")
-    private String ZipCode;
+    private String zipcode;
+
+    @Column(name = "pic_url")
+    private String pic;
 }

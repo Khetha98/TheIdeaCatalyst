@@ -1,8 +1,20 @@
 package com.subserve.theideacatalystbackend.Entity;
 
+import lombok.*;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ChatMessage {
-    private String content;
+
     private String sender;
-    private MessageType messageType;
+    private MessageType type;
+
+    public enum MessageType {
+        CHAT,
+        JOIN,
+        LEAVE
+    }
 }

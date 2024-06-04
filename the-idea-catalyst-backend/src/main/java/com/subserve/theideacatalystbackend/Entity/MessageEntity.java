@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "message_content")
@@ -16,16 +17,18 @@ public class MessageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "message_sent")
-    private String messageSent;
+    @Column(name = "message_sender")
+    private String messageSender;
 
     @Column(name = "message_receiver")
     private String messageReceiver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
+    @Column(name = "content")
+    private String content;
+
+
+    @Column(name = "timestamp")
+    private LocalDateTime timestamp;
 }
