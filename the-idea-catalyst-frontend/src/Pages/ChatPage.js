@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
-import "./ChatPage.css"; // Ensure this file exists with relevant styles
+import PostForm from "./PostForm";
+import PostList from "./PostList";
+import "./ChatPage.css";
 
 const colors = [
   "#2196F3",
@@ -16,11 +18,14 @@ const colors = [
 
 const ChatPage = () => {
   const [username, setUsername] = useState("");
+  const [receiver, setReceiver] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [stompClient, setStompClient] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [posts, setPosts] = useState([]);
   const [connecting, setConnecting] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const stompClientRef = useRef(null);
 
@@ -33,7 +38,7 @@ const ChatPage = () => {
       client.connect(
         {},
         () => {
-          client.subscribe("/topic/public", onMessageReceived);
+          client.subscribe("/user/queue/messages", onMessageReceived);
 
           client.send(
             "/app/chat.addUser",
@@ -63,6 +68,7 @@ const ChatPage = () => {
     if (message.trim() && stompClient) {
       const chatMessage = {
         sender: username,
+        receiver: receiver,
         content: message,
         type: "CHAT",
       };
@@ -89,6 +95,10 @@ const ChatPage = () => {
     return colors[index];
   };
 
+  const addPost = (post) => {
+    setPosts((prevPosts) => [post, ...prevPosts]);
+  };
+
   useEffect(() => {
     return () => {
       if (stompClientRef.current) {
@@ -98,7 +108,7 @@ const ChatPage = () => {
   }, []);
 
   return (
-    <div>
+    <div id="main-page">
       {!isConnected ? (
         <div id="username-page">
           <div className="username-page-container">
@@ -130,56 +140,77 @@ const ChatPage = () => {
               <h2>Spring WebSocket Chat Demo - By Khetha</h2>
             </div>
             {connecting && <div className="connecting">Connecting...</div>}
-            <ul id="messageArea">
-              {messages.map((message, index) => (
-                <li
-                  key={index}
-                  className={
-                    message.type === "JOIN" || message.type === "LEAVE"
-                      ? "event-message"
-                      : "chat-message"
-                  }
+            <div className="main-content">
+              <div className="chat-box">
+                <ul id="messageArea">
+                  {messages.map((message, index) => (
+                    <li
+                      key={index}
+                      className={
+                        message.type === "JOIN" || message.type === "LEAVE"
+                          ? "event-message"
+                          : "chat-message"
+                      }
+                    >
+                      {message.type !== "JOIN" && message.type !== "LEAVE" && (
+                        <>
+                          <i
+                            style={{
+                              backgroundColor: getAvatarColor(message.sender),
+                            }}
+                          >
+                            {message.sender[0]}
+                          </i>
+                          <span>{message.sender}</span>
+                        </>
+                      )}
+                      <p>
+                        {message.type === "JOIN"
+                          ? `${message.sender} joined!`
+                          : message.type === "LEAVE"
+                          ? `${message.sender} left!`
+                          : message.content}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <form
+                  id="messageForm"
+                  name="messageForm"
+                  onSubmit={sendMessage}
                 >
-                  {message.type !== "JOIN" && message.type !== "LEAVE" && (
-                    <>
-                      <i
-                        style={{
-                          backgroundColor: getAvatarColor(message.sender),
-                        }}
-                      >
-                        {message.sender[0]}
-                      </i>
-                      <span>{message.sender}</span>
-                    </>
-                  )}
-                  <p>
-                    {message.type === "JOIN"
-                      ? `${message.sender} joined!`
-                      : message.type === "LEAVE"
-                      ? `${message.sender} left!`
-                      : message.content}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <form id="messageForm" name="messageForm" onSubmit={sendMessage}>
-              <div className="form-group">
-                <div className="input-group clearfix">
-                  <input
-                    type="text"
-                    id="message"
-                    placeholder="Type a message..."
-                    autoComplete="off"
-                    className="form-control"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                  <button type="submit" className="primary">
-                    Send
-                  </button>
-                </div>
+                  <div className="form-group">
+                    <div className="input-group clearfix">
+                      <input
+                        type="text"
+                        id="message"
+                        placeholder="Type a message..."
+                        autoComplete="off"
+                        className="form-control"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        id="receiver"
+                        placeholder="Receiver"
+                        autoComplete="off"
+                        className="form-control"
+                        value={receiver}
+                        onChange={(e) => setReceiver(e.target.value)}
+                      />
+                      <button type="submit" className="primary">
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
-            </form>
+              <div className="post-section">
+                <PostForm onAddPost={addPost} />
+                <PostList posts={posts} />
+              </div>
+            </div>
           </div>
         </div>
       )}

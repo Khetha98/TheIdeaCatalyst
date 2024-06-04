@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from "react";
 import {
   Button,
   FormControl,
@@ -8,18 +8,37 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
-import { useState } from "react";
+import axios from "axios";
 
-const Login = () => {
-
+const Login = ({ onLoginSuccess }) => {
   const [show, setShow] = useState(false);
-  const [name, setName] = useState();
-  const [password, setPassword] = useState();
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleClick = () => setShow(!show);
 
-  const postDetails = (pics) => {};
-  const submitHandler = () => {};
+  const submitHandler = async () => {
+    const loginData = {
+      name,
+      password,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8081/user/login",
+        loginData
+      );
+      if (response.data === "Login successful!") {
+        // Assuming the response contains user data
+        const user = { name }; // Adjust according to actual user data from response
+        onLoginSuccess(user);
+      } else {
+        console.error("Login failed:", response.data);
+      }
+    } catch (error) {
+      console.error("Error logging in", error);
+    }
+  };
 
   return (
     <VStack spacing="5px" color="black">
@@ -49,24 +68,12 @@ const Login = () => {
         colorScheme="blue"
         width="100%"
         style={{ marginTop: 15 }}
-        onclick={submitHandler}
+        onClick={submitHandler}
       >
         Login
       </Button>
-      <Button
-        variant="solid"
-        colorScheme="red"
-        width="100%"
-        style={{ marginTop: 15 }}
-        onclick={() => {
-          setName("guest");
-          setPassword("123456");
-        }}
-      >
-        Get Guest User Credentials
-      </Button>
     </VStack>
   );
-}
+};
 
-export default Login
+export default Login;
