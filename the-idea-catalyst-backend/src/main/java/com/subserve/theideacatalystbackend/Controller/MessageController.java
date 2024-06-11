@@ -45,4 +45,3 @@ public class MessageController implements ErrorController {
         return ResponseEntity.ok(messageService.getMessages(sender, receiver));
     }
 }
-
