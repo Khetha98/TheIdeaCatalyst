@@ -10,7 +10,9 @@ import lombok.*;
 public class ChatMessage {
 
     private String sender;
+    private String receiver;
     private MessageType type;
+    private String content;
 
     public enum MessageType {
         CHAT,
@@ -18,3 +20,4 @@ public class ChatMessage {
         LEAVE
     }
 }
+

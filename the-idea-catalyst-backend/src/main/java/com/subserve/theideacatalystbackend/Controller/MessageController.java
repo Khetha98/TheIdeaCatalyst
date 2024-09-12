@@ -28,20 +28,12 @@ public class MessageController implements ErrorController {
 
     @PostMapping("/send_message")
     public ResponseEntity<MessageEntity> sendMessage(@RequestBody MessageEntity messageEntity) {
-        System.out.println("ABOUT TO PRINT THE MESSAGE TO BE SENT TO DATABASE");
-        System.out.println(messageEntity);
-        System.out.println(messageEntity.getMessageSender());
-        System.out.println(messageEntity.getMessageSender());
-//        System.out.println(messageEntity);
         return new ResponseEntity<>(messageService.sendMessage(messageEntity), HttpStatus.CREATED);
     }
 
     @CrossOrigin
     @GetMapping("/get_messages/{sender}/{receiver}")
     public ResponseEntity<List<MessageEntity>> getMessages(@PathVariable String sender, @PathVariable String receiver) {
-        System.out.println("NOW MESSAGES ARE BEING REQUESTED!!!");
-        System.out.println(sender);
-        System.out.println(receiver);
         return ResponseEntity.ok(messageService.getMessages(sender, receiver));
     }
 }

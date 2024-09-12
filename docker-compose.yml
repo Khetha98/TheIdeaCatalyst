@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: "100%Khetha"
+      MYSQL_DATABASE: "TheIdeaCatalyst"
+    ports:
+      - "3306:3306"
+    # Uncomment and adjust the path if you have an initialization script
+    # volumes:
+    #   - ./path/to/your/init.sql:/docker-entrypoint-initdb.d/init.sql 
+
+  backend:
+    build: ./the-idea-catalyst-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/TheIdeaCatalyst?useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 100%Khetha
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update  # Prevents data loss
+
+  frontend:
+    build: ./the-idea-catalyst-frontend
+    ports:
+      - "3000:3000"  # Ensure your React app runs on the same port
+    depends_on:
+      - backend
+
+
