@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/TheIdeaCatalyst/static/css/main.318bd142.css",
+    "main.js": "/TheIdeaCatalyst/static/js/main.ebcd3fc5.js",
+    "index.html": "/TheIdeaCatalyst/index.html",
+    "main.318bd142.css.map": "/TheIdeaCatalyst/static/css/main.318bd142.css.map",
+    "main.ebcd3fc5.js.map": "/TheIdeaCatalyst/static/js/main.ebcd3fc5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.318bd142.css",
+    "static/js/main.ebcd3fc5.js"
+  ]
+}
