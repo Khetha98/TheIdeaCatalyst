@@ -34,12 +34,12 @@ WORKDIR /app
 COPY --from=backend-build /app/target/TheIdeaCatalyst-*.jar app.jar
 
 # Set environment variables for MySQL and Hibernate
-ENV MYSQL_ROOT_PASSWORD="100%Khetha"
+ENV MYSQL_ROOT_PASSWORD="100Khetha"  # Remove the % to avoid shell errors
 ENV MYSQL_DATABASE="TheIdeaCatalyst"
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/TheIdeaCatalyst?useSSL=false
-ENV SPRING_DATASOURCE_USERNAME=root
-ENV SPRING_DATASOURCE_PASSWORD=100%Khetha
-ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update  # Prevent data loss by updating schema automatically
+ENV SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/TheIdeaCatalyst?useSSL=false"
+ENV SPRING_DATASOURCE_USERNAME="root"
+ENV SPRING_DATASOURCE_PASSWORD="100Khetha"  # Remove the % to avoid shell errors
+ENV SPRING_JPA_HIBERNATE_DDL_AUTO="update"  # Hibernate schema update
 
 # Expose the backend port
 EXPOSE 8080
