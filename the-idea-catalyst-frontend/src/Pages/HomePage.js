@@ -12,12 +12,14 @@ import Login from "../components/Authentication/Login";
 import Signup from "../components/Authentication/Signup";
 import UserList from "./UserList";
 import Chat from "../components/Chat";
+import axios from "axios";
 
 const HomePage = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [messages, setMessages] = useState([]);
 
   const handleLoginClick = () => {
     setShowLogin(true);
@@ -34,25 +36,25 @@ const HomePage = () => {
     setSelectedUser(null);
   };
 
-  // const handleUserClick = async (user, loggedInUser) => {
-  //   console.log("INSIDE THE FUNCTION THAT FETCHES MESSAGES FROM SERVER");
-  //   // setSelectedUser(user);
-  //   // onUserClick(user);
+  const handleUserClick = async (user) => {
+    console.log("INSIDE THE FUNCTION THAT FETCHES MESSAGES FROM SERVER");
+    setSelectedUser(user);
 
-  //   try {
-  //     const response = await axios.get(
-  //       "http://localhost:8081/message/get_messages/" +
-  //         loggedInUser.name +
-  //         "/" +
-  //         user.name
-  //       // `http://localhost:8081/messages/${loggedInUser}/${user}`
-  //     );
-  //     console.log(response);
-  //     setMessages(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching messages", error);
-  //   }
-  // };
+    if (!loggedInUser || !user) {
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8081/message/get_messages/${loggedInUser.name}/${user.name}`
+      );
+
+      // console.log(response);
+      setMessages(response.data);
+    } catch (error) {
+      console.error("Error fetching messages", error);
+    }
+  };
 
   return (
     <Container maxW="full" centerContent>
@@ -102,7 +104,7 @@ const HomePage = () => {
         >
           <UserList
             excludeUser={loggedInUser}
-            onUserClick={(user) => setSelectedUser(user)}
+            onUserClick={handleUserClick}
             isLoggedIn={!!loggedInUser}
           />
         </Box>
@@ -125,19 +127,22 @@ const HomePage = () => {
                 <Signup />
               </Box>
             )}
-            {selectedUser && loggedInUser && (
+            {selectedUser && loggedInUser ? (
               <Box width="100%" mt="4">
                 <Chat
                   currentUser={loggedInUser}
                   targetUser={selectedUser}
-                  onUserClick={(user) => setSelectedUser(user) }
+                  messages={messages}
+                  setMessages={setMessages}
                 />
               </Box>
-            )}
-            {!loggedInUser && selectedUser && (
-              <Box width="100%" mt="4">
-                <Text>You need to log in to chat.</Text>
-              </Box>
+            ) : (
+              !loggedInUser &&
+              selectedUser && (
+                <Box width="100%" mt="4">
+                  <Text>You need to log in to chat.</Text>
+                </Box>
+              )
             )}
           </VStack>
         </Box>

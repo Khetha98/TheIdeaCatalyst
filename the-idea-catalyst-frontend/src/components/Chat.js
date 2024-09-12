@@ -1,55 +1,86 @@
-import React, { useState } from "react";
-import { Box, Text, Input, Button, VStack, HStack } from "@chakra-ui/react";
-import axios from "axios";
+import { Box, Button, HStack, Input, Text, VStack } from "@chakra-ui/react";
+import { Client } from "@stomp/stompjs";
+import React, { useEffect, useState } from "react";
+import SockJS from "sockjs-client";
 
-const Chat = ({ currentUser, targetUser, onUserClick }) => {
+const colors = [
+  "#2196F3",
+  "#32c787",
+  "#00BCD4",
+  "#ff5652",
+  "#ffc107",
+  "#ff85af",
+  "#FF9800",
+  "#39bbb0",
+];
+
+const Chat = ({ currentUser, targetUser, messages, setMessages }) => {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [stompClient, setStompClient] = useState(null);
 
-  const handleUserClick = async (user, loggedInUser) => {
-    console.log("INSIDE THE FUNCTION THAT FETCHES MESSAGES FROM SERVER");
-    setSelectedUser(user);
-    onUserClick(user);
+  useEffect(() => {
+    const socket = new SockJS("http://localhost:8081/ws");
+    const client = new Client({
+      webSocketFactory: () => socket,
+      debug: (str) => console.log(str),
+      onConnect: () => {
+        const combinedChannel =
+          currentUser.name < targetUser.name
+            ? `${currentUser.name}_${targetUser.name}`
+            : `${targetUser.name}_${currentUser.name}`;
 
-    try {
-      const response = await axios.get(
-        "http://localhost:8081/message/get_messages/" +
-          loggedInUser.name +
-          "/" +
-          user.name
-        // `http://localhost:8081/messages/${loggedInUser}/${user}`
-      );
-      console.log(response);
-      setMessages(response.data);
-    } catch (error) {
-      console.error("Error fetching messages", error);
+        client.subscribe(`/topic/messages/${combinedChannel}`, (msg) => {
+          const newMessage = JSON.parse(msg.body);
+          // Only add the message to state if the sender is not the current user
+          if (newMessage.sender !== currentUser.name) {
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+          }
+        });
+
+        console.log("Subscribed to channel:", combinedChannel);
+      },
+    });
+
+    client.activate();
+    setStompClient(client);
+
+    return () => {
+      if (client) {
+        client.deactivate();
+        console.log("Disconnected from WebSocket");
+      }
+    };
+  }, [currentUser.name, targetUser.name, setMessages]);
+
+  const getAvatarColor = (messageSender) => {
+    if (!messageSender) {
+      return "#000";
     }
+
+    let hash = 0;
+    for (let i = 0; i < messageSender.length; i++) {
+      hash = 31 * hash + messageSender.charCodeAt(i);
+    }
+    const index = Math.abs(hash % colors.length);
+    return colors[index];
   };
 
-  const sendMessage = async () => {
-    if (!message.trim()) return;
+  const sendMessage = () => {
+    if (!message.trim() || !stompClient) return;
 
     const newMessage = {
-      messageSender: currentUser.name,
-      messageReceiver: targetUser.name,
+      sender: currentUser.name,
+      receiver: targetUser.name,
       content: message,
     };
 
-    try {
-      console.log();
-      const response = await axios.post(
-        "http://localhost:8081/message/send_message",
-        newMessage
-      );
-      if (response.data) {
-        setMessages([...messages, newMessage]);
-        // handleUserClick(targetUser, currentUser);
-        setMessage("");
-      }
-    } catch (error) {
-      console.error("Error sending message", error);
-    }
+    stompClient.publish({
+      destination: "/app/chat.sendMessage",
+      body: JSON.stringify(newMessage),
+    });
+
+    setMessages([...messages, newMessage]);
+    setMessage("");
   };
 
   return (
@@ -57,24 +88,6 @@ const Chat = ({ currentUser, targetUser, onUserClick }) => {
       <Text fontSize="xl" mb="4">
         Chat with {targetUser.name}
       </Text>
-      <Box>
-        {selectedUser && (
-          <Box mt="4">
-            <Text fontSize="xl" mb="2">
-              Messages with {currentUser.name}
-            </Text>
-            {messages.length > 0 ? (
-              messages.map((message, index) => (
-                <Box key={index} p="2" borderBottom="1px solid #ccc">
-                  <div>{message.content}</div>
-                </Box>
-              ))
-            ) : (
-              <Text>No previous messages found</Text>
-            )}
-          </Box>
-        )}
-      </Box>
       <VStack spacing="4">
         {messages.map((msg, index) => (
           <Box
@@ -85,11 +98,43 @@ const Chat = ({ currentUser, targetUser, onUserClick }) => {
             p="2"
             bg="gray.100"
             borderRadius="lg"
+            maxW="70%"
           >
-            <Text>{msg.content}</Text>
-            <Text fontSize="sm" color="gray.500">
-              - {msg.sender}
-            </Text>
+            <HStack>
+              {msg.sender !== currentUser.name && msg.sender && (
+                <span
+                  style={{
+                    // backgroundColor: getAvatarColor(msg.sender),
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    width: "24px",
+                    height: "24px",
+                    textAlign: "center",
+                    lineHeight: "24px",
+                    marginRight: "8px",
+                  }}
+                >
+                  {msg.sender}
+                </span>
+              )}
+              <Text>{msg.content}</Text>
+              {msg.sender === currentUser.name && (
+                <span
+                  style={{
+                    // backgroundColor: getAvatarColor(msg.sender),
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    width: "24px",
+                    height: "24px",
+                    textAlign: "center",
+                    lineHeight: "24px",
+                    marginLeft: "8px",
+                  }}
+                >
+                  {msg.sender}
+                </span>
+              )}
+            </HStack>
           </Box>
         ))}
         {currentUser && (
